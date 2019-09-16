@@ -1,5 +1,5 @@
-﻿using Application.ConnectionService;
-using Application.MessageService;
+﻿using Application.MessageService;
+using Application.SubscriptionService;
 using MessageBroker.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,7 +42,7 @@ namespace MessageBroker
 
             services.AddSingleton<IDbContext, DbContext>();
 
-            services.AddTransient<IConnectionService, ConnectionService>();
+            services.AddTransient<ISubscriptionService, SubscriptionService>();
             services.AddTransient<IMessageService, MessageService>();
         }
 

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using Application.ConnectionService;
 using Application.MessageService;
+using Application.SubscriptionService;
 using Microsoft.AspNetCore.SignalR;
 using Models.Entities;
 using MongoDB.Bson;
@@ -11,12 +11,12 @@ namespace MessageBroker.Hubs
     public class MessageHub : Hub
     {
         private readonly IMessageService _messageService;
-        private readonly IConnectionService _connectionService;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public MessageHub(IMessageService messageService, IConnectionService connectionService)
+        public MessageHub(IMessageService messageService, ISubscriptionService subscriptionService)
         {
             _messageService = messageService;
-            _connectionService = connectionService;
+            _subscriptionService = subscriptionService;
         }
 
         public async Task SendMessage(string message, string topicName)
@@ -32,10 +32,10 @@ namespace MessageBroker.Hubs
 
         public async Task Subscribe(string topicName)
         {
-            await _connectionService.Create(new Connection
+            await _subscriptionService.Create(new Subscription
             {
                 Topic = topicName,
-                ConnectionId = Context.ConnectionId
+                SubscriptionId = Context.ConnectionId
             });
 
             await Groups.AddToGroupAsync(Context.ConnectionId, topicName);
@@ -46,10 +46,10 @@ namespace MessageBroker.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var connection = await _connectionService.Get(Context.ConnectionId);
+            var subscription = await _subscriptionService.Get(Context.ConnectionId);
 
-            await _connectionService.Remove(Context.ConnectionId);
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, connection.Topic);
+            await _subscriptionService.Remove(Context.ConnectionId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, subscription.Topic);
         }
     }
 }

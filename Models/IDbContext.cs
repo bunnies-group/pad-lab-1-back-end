@@ -5,7 +5,7 @@ namespace Models
 {
     public interface IDbContext
     {
-        IMongoCollection<Connection> Connections { get; }
+        IMongoCollection<Subscription> Subscriptions { get; }
         IMongoCollection<Message> Messages { get; }
     }
 }

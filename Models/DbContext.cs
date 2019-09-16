@@ -6,7 +6,7 @@ namespace Models
 {
     public class DbContext : IDbContext
     {
-        public IMongoCollection<Connection> Connections { get; }
+        public IMongoCollection<Subscription> Subscriptions { get; }
         public IMongoCollection<Message> Messages { get; }
 
         public DbContext(IDatabaseSettings settings)
@@ -14,7 +14,7 @@ namespace Models
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
 
-            Connections = database.GetCollection<Connection>(settings.ConnectionsCollectionName);
+            Subscriptions = database.GetCollection<Subscription>(settings.SubscriptionsCollectionName);
             Messages = database.GetCollection<Message>(settings.MessagesCollectionName);
         }
     }
