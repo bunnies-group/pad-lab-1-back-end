@@ -32,6 +32,13 @@ namespace MessageBroker.Hubs
 
         public async Task Subscribe(string topicName)
         {
+            var subscription = await _subscriptionService.Get(Context.ConnectionId);
+
+            if (subscription != null)
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, subscription.Topic);
+            }
+
             await _subscriptionService.Create(new Subscription
             {
                 Topic = topicName,
