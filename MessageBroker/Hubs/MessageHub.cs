@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Application.MessageEnricher;
 using Application.MessageService;
+using Application.MessageTranslator;
 using Application.SubscriptionService;
 using Microsoft.AspNetCore.SignalR;
 using Models.Entities;
@@ -9,26 +10,35 @@ using MongoDB.Bson;
 
 namespace MessageBroker.Hubs
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class MessageHub : Hub
     {
         private readonly IMessageService _messageService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IMessageEnricher _messageEnricher;
 
-        public MessageHub(IMessageService messageService, ISubscriptionService subscriptionService)
+        public MessageHub(
+            IMessageService messageService,
+            ISubscriptionService subscriptionService,
+            IMessageEnricher messageEnricher
+        )
         {
             _messageService = messageService;
             _subscriptionService = subscriptionService;
+            _messageEnricher = messageEnricher;
         }
 
         public async Task SendMessage(string message, string topicName)
         {
+            var translatedMessage = _messageEnricher.Translate(message);
+
             await _messageService.Create(new Message
             {
-                Content = message,
+                Content = translatedMessage,
                 Topic = topicName
             });
 
-            await Clients.Group(topicName).SendAsync("message", message);
+            await Clients.Group(topicName).SendAsync("message", translatedMessage);
         }
 
         public async Task Subscribe(string topicName)
@@ -38,6 +48,7 @@ namespace MessageBroker.Hubs
             if (subscription != null)
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, subscription.Topic);
+                await _subscriptionService.Remove(Context.ConnectionId);
             }
 
             await _subscriptionService.Create(new Subscription

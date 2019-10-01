@@ -1,5 +1,6 @@
-using Application.MessageEnricher;
+﻿using Application.MessageEnricher;
 using Application.MessageService;
+using Application.MessageTranslator;
 using Application.SubscriptionService;
 using MessageBroker.Hubs;
 using Microsoft.AspNetCore.Builder;
@@ -29,22 +30,22 @@ namespace MessageBroker
             {
                 options.AddPolicy("CorsPolicy", builder => builder
                     .WithOrigins("http://localhost:4200")
-                    // .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
             });
 
             services.AddSignalR();
-            
-            services.Configure<DatabaseSettings>(Configuration.GetSection(nameof(DatabaseSettings)));
 
+            services.Configure<DatabaseSettings>(Configuration.GetSection(nameof(DatabaseSettings)));
             services.AddSingleton<IDatabaseSettings>(sp => sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
 
             services.AddSingleton<IDbContext, DbContext>();
 
             services.AddTransient<ISubscriptionService, SubscriptionService>();
             services.AddTransient<IMessageService, MessageService>();
+
+            services.AddSingleton<IMessageEnricher, MessageEnricher>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
