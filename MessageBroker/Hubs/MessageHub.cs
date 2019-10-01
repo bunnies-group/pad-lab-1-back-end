@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Application.MessageEnricher;
 using Application.MessageService;
 using Application.SubscriptionService;
 using Microsoft.AspNetCore.SignalR;
