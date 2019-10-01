@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Application.MessageEnricher;
 using Application.MessageService;
-using Application.MessageTranslator;
 using Application.SubscriptionService;
 using Microsoft.AspNetCore.SignalR;
 using Models.Entities;
 using MongoDB.Bson;
+using Serilog;
 
 namespace MessageBroker.Hubs
 {
@@ -28,9 +28,13 @@ namespace MessageBroker.Hubs
             _messageEnricher = messageEnricher;
         }
 
+        private const string LogTemplate = "{0} send message \"{1}\" translated into \"{2}\" to topic \"{3}\"";
+
         public async Task SendMessage(string message, string topicName)
         {
             var translatedMessage = _messageEnricher.Translate(message);
+
+            Log.Information(LogTemplate, Context.ConnectionId, message, translatedMessage, topicName);
 
             await _messageService.Create(new Message
             {
