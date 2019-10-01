@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Application.MessageEnricher;
 
-namespace Application.MessageTranslator
+namespace Application.MessageEnricher
 {
     public class MessageEnricher : IMessageEnricher
     {
@@ -14,14 +13,19 @@ namespace Application.MessageTranslator
             { "hi", "Hello" },
             { "lol", "laughing out loud" },
             { "imho", "in my horrible opinion" },
-            { "USSR", "Union of Soviet Socialist Republics" },
+            { "ussr", "Union of Soviet Socialist Republics" },
+            { "ok", "okay" },
+            { "utm", "utm is meh" }
         };
 
         public string Translate(string message)
         {
             return _punctuationRegex.Split(message)
+                .Select(it => it.ToLowerInvariant())
+                .Distinct()
                 .Where(word => _dictionary.ContainsKey(word))
-                .Aggregate(message, (current, word) => current.Replace(word, _dictionary[word]));
+                .Aggregate(message, (current, word) =>
+                    Regex.Replace(current, word, _dictionary[word], RegexOptions.IgnoreCase));
         }
     }
 }

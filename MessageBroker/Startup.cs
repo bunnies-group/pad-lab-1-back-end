@@ -1,6 +1,5 @@
 ﻿using Application.MessageEnricher;
 using Application.MessageService;
-using Application.MessageTranslator;
 using Application.SubscriptionService;
 using MessageBroker.Hubs;
 using Microsoft.AspNetCore.Builder;
