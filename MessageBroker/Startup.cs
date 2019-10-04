@@ -1,4 +1,5 @@
-﻿using Application.MessageEnricher;
+﻿using Application.ContentBasedRouter;
+using Application.MessageEnricher;
 using Application.MessageService;
 using Application.SubscriptionService;
 using MessageBroker.Hubs;
@@ -45,6 +46,7 @@ namespace MessageBroker
             services.AddTransient<IMessageService, MessageService>();
 
             services.AddSingleton<IMessageEnricher, MessageEnricher>();
+            services.AddSingleton<IContentBasedRouter, ContentBasedRouter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

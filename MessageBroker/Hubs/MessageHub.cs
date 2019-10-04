@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Application.ContentBasedRouter;
 using Application.MessageEnricher;
 using Application.MessageService;
 using Application.SubscriptionService;
@@ -16,16 +19,19 @@ namespace MessageBroker.Hubs
         private readonly IMessageService _messageService;
         private readonly ISubscriptionService _subscriptionService;
         private readonly IMessageEnricher _messageEnricher;
+        private readonly IContentBasedRouter _contentBasedRouter;
 
         public MessageHub(
             IMessageService messageService,
             ISubscriptionService subscriptionService,
-            IMessageEnricher messageEnricher
+            IMessageEnricher messageEnricher,
+            IContentBasedRouter contentBasedRouter
         )
         {
             _messageService = messageService;
             _subscriptionService = subscriptionService;
             _messageEnricher = messageEnricher;
+            _contentBasedRouter = contentBasedRouter;
         }
 
         private const string LogTemplate = "{0} send message \"{1}\" translated into \"{2}\" to topic \"{3}\"";
@@ -42,7 +48,16 @@ namespace MessageBroker.Hubs
                 Topic = topicName
             });
 
-            await Clients.Group(topicName).SendAsync("message", translatedMessage);
+            var topicList = new List<string> { topicName };
+            var additionalTopics = _contentBasedRouter.ComputeAdditionalRoutes(message);
+
+            topicList.AddRange(additionalTopics);
+
+            Task.WaitAll(
+                topicList
+                    .Select(topic => Clients.Group(topic).SendAsync("message", translatedMessage))
+                    .ToArray()
+            );
         }
 
         public async Task Subscribe(string topicName)
